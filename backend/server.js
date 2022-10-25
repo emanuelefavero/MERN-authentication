@@ -4,16 +4,15 @@ const mongoose = require('mongoose')
 const express = require('express')
 const cors = require('cors')
 const passport = require('passport')
-const passportLocal = require('passport-local').Strategy
 const cookieParser = require('cookie-parser')
-const bcrypt = require('bcryptjs')
 const session = require('express-session')
 const bodyParser = require('body-parser')
+const authRouter = require('./routes/auth')
 
 const app = express()
 
 // ----------------- Mongoose -----------------
-const User = require('./user')
+const User = require('./models/user')
 mongoose.connect(
   process.env.MONGODB_URI,
   {
@@ -47,50 +46,7 @@ app.use(passport.session())
 require('./passportConfig')(passport)
 
 // ------------- Routes -------------
-app.post('/login', (req, res, next) => {
-  passport.authenticate('local', (err, user, info) => {
-    if (err) throw err
-    if (!user) res.send('No User Exists')
-    else {
-      req.logIn(user, (err) => {
-        if (err) throw err
-        res.send('Successfully Authenticated')
-        // console.log(req.user)
-      })
-    }
-  })(req, res, next)
-})
-app.post('/register', (req, res) => {
-  User.findOne({ username: req.body.username }, async (err, doc) => {
-    if (err) throw err
-    if (doc) res.send('User Already Exists')
-    if (!doc) {
-      const hashedPassword = await bcrypt.hash(req.body.password, 10)
-      const newUser = new User({
-        username: req.body.username,
-        password: hashedPassword,
-      })
-      await newUser.save()
-      res.send('User Created')
-    }
-  })
-  // console.log(req.body)
-})
-
-// Logout - destroys the session
-app.get('/logout', (req, res) => {
-  req.logout((err) => {
-    if (err) {
-      return next(err)
-    }
-    res.send('User Logged out')
-  })
-})
-
-app.get('/user', (req, res) => {
-  res.send(req.user)
-  // TIP: Once authenticated, the user is stored in the req.user object, which contains all the session data. This can be used and called at absolutely any time, anywhere in the application, even if the user refreshes the page.
-})
+app.use('/', authRouter)
 
 // ----------- Start Server ------------
 const PORT = process.env.PORT || 4000
