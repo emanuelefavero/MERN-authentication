@@ -6,6 +6,8 @@ _NOTE: This app is meant to only show how to use Passport JS with React. I would
 
 ## Test the app locally on your machine
 
+> BEWARE: Before you start, make sure the MongoDB Atlas cluster is running and not paused. If it is paused, the app will not work. (My MongodDB Atlas instance for this app is called "Authentication")
+
 - Clone the repo and `cd` into the project directory
 - Add a _.env_ file in the root directory with the following variables:
 
